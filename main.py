@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip  #for copying pw to clipboard
+import json #write data to json file
 
 BG_COLOR = "#2c394b" # light green
 FONT_NAME = "Courier"
@@ -32,17 +33,44 @@ def generate():
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def add():
-    new_data = f"{entry_website.get()} | {entry_username.get()} | {entry_password.get()}\n"
-    # have user approve of data using messagebox before writing to file
-    if len(entry_website.get()) == 0 or len(entry_password.get()) == 0:
+    website = entry_website.get()
+    username = entry_username.get()
+    password = entry_password.get()
+    # new_data = f"{entry_website.get()} | {entry_username.get()} | {entry_password.get()}\n"
+    # check to make sure fields are filled. username is autofilled, so don't need to check it
+    # make a nested dictionary of info
+    # first level key: website (because that's what we search through)
+    # website dictionary has another dictionary with 2 keys: username and pw
+
+    new_data = {
+        website:{
+            "username": username,
+            "password": password
+        }
+    }
+
+
+    if len(website) == 0 or len(password) == 0:
         messagebox.showinfo(title="Oops", message=f"You should not have any blank fields.\n\nPlease correct and try again")
     else:
-        is_ok = messagebox.askokcancel(title="Confirm", message=f"Add this info?\n\n{new_data}")
+        try:
+            with open("data.json", "r") as data_file:
+                # read old data
+                data = json.load(data_file)
 
-        # a = append mode. Will create the file if it doesn't exist
-        if is_ok:
-            with open("data.txt", "a") as data_file:
-                data_file.write(new_data)
+        except FileNotFoundError:
+            with open("data.json", "w") as data_file:
+            # a = append mode. Will create the file because it doesn't exist
+                json.dump(new_data, data_file, indent=4)
+        else:
+            # file existed, update old data with new info
+            data.update(new_data)
+
+            with open("data.json", "w") as data_file:
+                # save the updated data
+                json.dump(data, data_file, indent=4)
+        finally:
+            # clear fields no matter if file was new or existed
             entry_website.delete(0, END)
             entry_website.focus()
             entry_password.delete(0, END)
