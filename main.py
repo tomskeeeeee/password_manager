@@ -74,6 +74,29 @@ def add():
             entry_website.delete(0, END)
             entry_website.focus()
             entry_password.delete(0, END)
+# _____________________________ SEARCH FOR INFO ______________________ #
+def search():
+    website = entry_website.get()
+    try:
+        with open("data.json", "r") as data_file:
+            # read old data
+            data = json.load(data_file)
+
+    except FileNotFoundError:
+        messagebox.showinfo(title="Oops", message=f"You have no data to search")
+
+    else:
+        # print out data
+        try:
+            data_dict =  data.get(website)
+            messagebox.showinfo(title=f"{website}", message=f"Username: {data_dict.get('username')}\nPassword: {data_dict.get('password')}")
+            entry_password.insert(0, data_dict.get('password'))
+            entry_username.delete(0, END)
+            entry_username.insert(0, data_dict.get('username'))
+        except AttributeError:
+            messagebox.showinfo(title="Oops", message=f"{website} is not found")
+
+    # print(data_dict)
 # ---------------------------- UI SETUP ------------------------------- #
 
 #Creating a new window and configurations
@@ -128,4 +151,7 @@ button_add_info = Button(text="Add", command=add)
 button_add_info.config(width=44, padx=0, pady= 2, fg=BG_COLOR)
 button_add_info.grid(column=1, row=4, columnspan=2)
 
+button_search = Button(text="Search", command=search)
+button_search.config(width=12, padx=0, pady= 2, fg=BG_COLOR)
+button_search.grid(column=3, row=1)
 window.mainloop()
